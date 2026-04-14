@@ -83,9 +83,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'djongo',
-        'NAME': 'daylog_db',
+        'NAME': 'daylog',
         'CLIENT': {
-            'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017'),
+            'host': os.environ.get('MONGO_URI'),
+            'ssl': True,
+            'ssl_cert_reqs': 'CERT_NONE',
         }
     }
 }
