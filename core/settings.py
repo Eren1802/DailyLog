@@ -84,6 +84,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'djongo',
         'NAME': 'daylog_db',
+        'CLIENT': {
+            'host': os.getenv('MONGO_URI', 'mongodb://localhost:27017'),
+        }
     }
 }
 
