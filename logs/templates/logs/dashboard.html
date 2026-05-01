@@ -189,7 +189,6 @@
                 {% empty %}
                     <div class="empty">No pending tasks 🎉</div>
                 {% endfor %}
-                {% if logs and not logs|length %}
                     <div class="empty">No pending tasks 🎉</div>
                 {% endif %}
             </div>
@@ -216,7 +215,6 @@
 
         const days = {{ week_days|safe }};
         const counts = {{ week_counts|safe }};
-        const moods = {{ week_moods|safe }};
 
         const ctx = document.getElementById('weekChart').getContext('2d');
         new Chart(ctx, {
@@ -247,16 +245,6 @@
                         grid: { display: false }
                     }
                 }
-            }
-        });
-
-        const moodList = document.getElementById('moodList');
-        days.forEach((day, i) => {
-            if (moods[i]) {
-                const el = document.createElement('div');
-                el.style.cssText = 'display:flex; justify-content:space-between; font-size:12px;';
-                el.innerHTML = `<span style="color:#aaa;">${day}</span><span style="color:#1a1a1a;">${moods[i]}</span>`;
-                moodList.appendChild(el);
             }
         });
     }

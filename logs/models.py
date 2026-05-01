@@ -11,10 +11,3 @@ class DailyLog(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.date}"
-
-class PendingTask(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    log = models.ForeignKey(DailyLog, on_delete=models.CASCADE)
-    task = models.TextField()
-    completed = models.BooleanField(default=False)
-    created_at = models.DateField(auto_now_add=True)
