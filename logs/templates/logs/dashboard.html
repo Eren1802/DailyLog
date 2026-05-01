@@ -105,6 +105,14 @@
                 <form method="POST">
                     {% csrf_token %}
                     <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Time</label>
+                        <input type="time" name="time" class="form-control">
+                    </div>
+                    <div class="form-group">
                         <label class="form-label">What did you do?</label>
                         <textarea name="done" class="form-control" rows="3" placeholder="I finished..." required></textarea>
                     </div>
@@ -120,28 +128,6 @@
                 </form>
             </div>
             <div class="card">
-                <div class="card-title">Pending Tasks</div>
-                {% for log in logs %}
-                    {% if log.pending %}
-                    <div class="log-entry">
-                        <div class="log-dot pending"></div>
-                        <div style="flex: 1;">
-                            <div class="log-text">{{ log.pending }}</div>
-                            <div class="log-meta" style="display: flex; align-items: center; gap: 10px;">
-                                {{ log.date|date:"M d, Y" }}
-                                <a href="/complete/{{ log.id }}/" style="color: #1D9E75; font-size: 11px; text-decoration: none;">✓ Complete</a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-                {% empty %}
-                    <div class="empty">No pending tasks 🎉</div>
-                {% endfor %}
-                {% if logs and not logs|length %}
-                    <div class="empty">No pending tasks 🎉</div>
-                {% endif %}
-            </div>
-            <div class="card">
                 <div class="card-title">Recent logs</div>
                 {% for log in logs %}
                     <div class="log-entry">
@@ -152,7 +138,7 @@
                                 {% if log.mood %}<span class="mood-badge">{{ log.mood }}</span>{% endif %}
                             </div>
                             <div class="log-meta" style="display: flex; align-items: center; gap: 10px;">
-                                {{ log.date|date:"M d, Y" }}
+                                {{ log.date|date:"M d, Y" }}{% if log.time %} · {{ log.time|time:"g:i A" }}{% endif %}
                                 <a href="/edit/{{ log.id }}/" style="color: #1D9E75; font-size: 11px; text-decoration: none;">Edit</a>
                                 <a href="/delete/{{ log.id }}/" style="color: #E24B4A; font-size: 11px; text-decoration: none;" onclick="return confirm('Delete this log?')">Delete</a>
                             </div>
@@ -180,14 +166,32 @@
             <div class="card">
                 <div class="card-title">Weekly Analysis</div>
                 <canvas id="weekChart" height="160"></canvas>
-                <div style="margin-top: 1rem; font-size: 12px; color: #aaa;">
-                    Most productive
+                <div style="margin-top: 1rem; font-size: 12px; color: #b8b4b4;">
+                    Most Productive
                     <span style="color: #1D9E75; font-weight: 500; margin-left: 4px;">{{ most_productive_day }}</span>
                 </div>
-                <div style="margin-top: 0.75rem;">
-                    <div style="font-size: 12px; color: #aaa; margin-bottom: 6px;">Moods this week</div>
-                    <div id="moodList" style="display: flex; flex-direction: column; gap: 4px;"></div>
-                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Pending Tasks</div>
+                {% for log in logs %}
+                    {% if log.pending %}
+                    <div class="log-entry">
+                        <div class="log-dot pending"></div>
+                        <div style="flex: 1;">
+                            <div class="log-text">{{ log.pending }}</div>
+                            <div class="log-meta" style="display: flex; align-items: center; gap: 10px;">
+                                {{ log.date|date:"M d, Y" }}{% if log.time %} · {{ log.time|time:"g:i A" }}{% endif %}
+                                <a href="/complete/{{ log.id }}/" style="color: #1D9E75; font-size: 11px; text-decoration: none;">✓ Complete</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% empty %}
+                    <div class="empty">No pending tasks 🎉</div>
+                {% endfor %}
+                {% if logs and not logs|length %}
+                    <div class="empty">No pending tasks 🎉</div>
+                {% endif %}
             </div>
         </div>
 
@@ -226,7 +230,7 @@
                     borderWidth: 2,
                     pointBackgroundColor: '#1D9E75',
                     pointRadius: 4,
-                    tension: 0.4,
+                    tension: 0,
                     fill: true,
                 }]
             },
@@ -236,7 +240,7 @@
                     y: {
                         beginAtZero: true,
                         ticks: { stepSize: 1, font: { family: 'Nunito', size: 11 }, color: '#aaa' },
-                        grid: { color: 'rgba(0,0,0,0.05)' }
+                        grid: { color: 'rgba(255,255,255,0.1)' }
                     },
                     x: {
                         ticks: { font: { family: 'Nunito', size: 11 }, color: '#aaa' },

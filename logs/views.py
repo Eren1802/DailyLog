@@ -2,16 +2,11 @@ import json
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 from .forms import DailyLogForm
 from .models import DailyLog
 
 @login_required
-def complete_pending(request, log_id):
-    log = DailyLog.objects.get(id=log_id, user=request.user)
-    log.pending = ''
-    log.save()
-    return redirect('dashboard')
 def dashboard(request):
     if request.method == 'POST':
         form = DailyLogForm(request.POST)
@@ -20,7 +15,9 @@ def dashboard(request):
                 user=request.user,
                 done=form.cleaned_data['done'],
                 pending=form.cleaned_data['pending'],
-                mood=form.cleaned_data['mood']
+                mood=form.cleaned_data['mood'],
+                date=form.cleaned_data['date'],
+                time=form.cleaned_data['time']
             )
             return redirect('dashboard')
     else:
@@ -28,8 +25,7 @@ def dashboard(request):
 
     today = timezone.now().date()
     week_start = today - timedelta(days=7)
-
-    logs = DailyLog.objects.filter(user=request.user).order_by('-date')
+    logs = DailyLog.objects.filter(user=request.user).order_by('-date', '-time')
     total_logs = logs.count()
     week_logs = DailyLog.objects.filter(user=request.user, date__gte=week_start).count()
 
@@ -38,20 +34,15 @@ def dashboard(request):
     while DailyLog.objects.filter(user=request.user, date=check_date).exists():
         streak += 1
         check_date -= timedelta(days=1)
-    # Weekly analysis data
-    week_days = []
-    week_counts = []
-    week_moods = []
+
+    week_days, week_counts, week_moods = [], [], []
     for i in range(6, -1, -1):
         day = today - timedelta(days=i)
         count = DailyLog.objects.filter(user=request.user, date=day).count()
         moods = list(DailyLog.objects.filter(user=request.user, date=day).values_list('mood', flat=True))
         week_days.append(day.strftime('%a'))
         week_counts.append(count)
-        if moods:
-            week_moods.append(moods[-1])
-        else:
-            week_moods.append('')
+        week_moods.append(moods[-1] if moods else '')
 
     most_productive_day = week_days[week_counts.index(max(week_counts))] if max(week_counts) > 0 else 'None'
 
@@ -70,17 +61,27 @@ def dashboard(request):
 
 @login_required
 def delete_log(request, log_id):
-    log = DailyLog.objects.get(id=log_id, user=request.user)
-    log.delete()
+    DailyLog.objects.get(id=log_id, user=request.user).delete()
     return redirect('dashboard')
 
 @login_required
 def edit_log(request, log_id):
     log = DailyLog.objects.get(id=log_id, user=request.user)
+    week_ago = date.today() - timedelta(days=7)
+    if log.date < week_ago:
+        return redirect('dashboard')
     if request.method == 'POST':
         log.done = request.POST.get('done')
         log.pending = request.POST.get('pending')
         log.mood = request.POST.get('mood')
+        log.time = request.POST.get('time') or None
         log.save()
         return redirect('dashboard')
     return render(request, 'logs/edit_log.html', {'log': log})
+
+@login_required
+def complete_pending(request, log_id):
+    log = DailyLog.objects.get(id=log_id, user=request.user)
+    log.pending = ''
+    log.save()
+    return redirect('dashboard')

@@ -50,6 +50,10 @@ body.dark .subtitle { color: #666; }
                 <label class="form-label">How are you feeling?</label>
                 <input type="text" name="mood" class="form-control" value="{{ log.mood }}" maxlength="50">
             </div>
+            <div class="form-group">
+    <label class="form-label">Time</label>
+    <input type="time" name="time" class="form-control" value="{{ log.time|time:'H:i' }}">
+</div>
             <button type="submit" class="submit-btn">Save changes</button>
         </form>
         <div class="back-link"><a href="/dashboard/">← Back to dashboard</a></div>
